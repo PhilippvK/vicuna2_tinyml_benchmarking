@@ -6,7 +6,7 @@ message(STATUS "CMake Version ${CMAKE_MAJOR_VERSION}.${CMAKE_MINOR_VERSION}.${CM
 ########################
 # Arguments
 #
-# RV_ARCH : select the processor architecture configuration to verilate
+# RISCV_ARCH : select the processor architecture configuration to verilate
 # TRACE   : If defined, enable vcd trace outputs.  WARNING: Traces can be very large (GBs)
 # TRACE_FULL   : If defined, trace outputs of ENTIRE model WARNING: Traces can be very VERY large (GBs) (requires TRACE=ON)
 # CACHE :   Enable a cache configuration
@@ -37,7 +37,7 @@ set(VREG_W 128 CACHE STRING "VREG_W")
 set(VMEM_W 32 CACHE STRING "VMEM_W")
 set(MEM_W 32 CACHE STRING "MEM_W")
 set(VLANE_W 32 CACHE STRING "VLANE_W")
-set(DCACHE_LINE_W 128 CACHE STRING "DCACHE_LINE_W") 
+set(DCACHE_LINE_W 128 CACHE STRING "DCACHE_LINE_W")
 
 set(MEM_SZ 4194304)
 
@@ -94,7 +94,7 @@ elseif(${RISCV_ARCH} STREQUAL "rv32imf_zfh_zve32f_zvfh") #Build CV32E40X with Vi
     set(RISCV_ZVFH "-DRISCV_ZVFH" )
 
 else()
-    message(FATAL_ERROR "Unsupported RISCV_ARCH selected")
+    message(FATAL_ERROR "Unsupported RISCV_ARCH (${RISCV_ARCH}) selected")
 
 endif()
 
@@ -102,7 +102,7 @@ endif()
 # Sources/Include Directories
 ######################
 
-#Path to CV32E40X sources               
+#Path to CV32E40X sources
 set(DESIGN_RTL_DIR_CV32E40X ${CMAKE_CURRENT_SOURCE_DIR}/../rtl/cv32e40x/rtl)
 
 #Path to FPU_SS sources
@@ -112,8 +112,8 @@ set(CV32E40X_SOURCE ${DESIGN_RTL_DIR_CV32E40X}/include/cv32e40x_pkg.sv          
                     ${DESIGN_RTL_DIR_CV32E40X}/if_c_obi.sv
                     ${DESIGN_RTL_DIR_CV32E40X}/if_xif.sv
                     ${DESIGN_RTL_DIR_CV32E40X}/../bhv/cv32e40x_sim_clock_gate.sv
-                    ${DESIGN_RTL_DIR_CV32E40X}/cv32e40x_core.sv 
-                    ${DESIGN_RTL_DIR_CV32E40X}/cv32e40x_a_decoder.sv 
+                    ${DESIGN_RTL_DIR_CV32E40X}/cv32e40x_core.sv
+                    ${DESIGN_RTL_DIR_CV32E40X}/cv32e40x_a_decoder.sv
                     ${DESIGN_RTL_DIR_CV32E40X}/cv32e40x_alignment_buffer.sv
                     ${DESIGN_RTL_DIR_CV32E40X}/cv32e40x_alu.sv
                     ${DESIGN_RTL_DIR_CV32E40X}/cv32e40x_alu_b_cpop.sv
@@ -152,12 +152,12 @@ set(CV32E40X_SOURCE ${DESIGN_RTL_DIR_CV32E40X}/include/cv32e40x_pkg.sv          
                     ${DESIGN_RTL_DIR_CV32E40X}/cv32e40x_wb_stage.sv
                     ${DESIGN_RTL_DIR_CV32E40X}/cv32e40x_write_buffer.sv
                     )
-               
+
 
 set(CV32E40X_INCLUDE ${DESIGN_RTL_DIR_CV32E40X}                                         #CV32E40X Include Dirs
                     ${DESIGN_RTL_DIR_CV32E40X}/include
                     ${DESIGN_RTL_DIR_CV32E40X}/../bhv)
-                   
+
 set(FPU_SS_SOURCE   ${DESIGN_RTL_DIR_FPU_SS}/fpu_ss_pkg.sv                              #FPU_SS Sources
                     ${DESIGN_RTL_DIR_FPU_SS}/fpu_ss_prd_f_pkg.sv
                     ${DESIGN_RTL_DIR_FPU_SS}/fpu_ss_prd_f_zfh_pkg.sv
@@ -182,7 +182,7 @@ add_subdirectory(../rtl/vproc_rtl vicuna) # Include vicuna and cvfpu with VICUNA
 if(TRACE)
     add_definitions(-DTRACE_VCD) #This does nothing.  TODO: Confirm and remove.
     set(TRACE TRACE)
-    
+
     if(TRACE_FULL)
         set(TRACE_FLAG  ) #no --trace-depth flag defaults to entire model
     else()
@@ -199,23 +199,23 @@ if(FORCE_ALIGNED_READS)
     set(READ_MODE -DFORCE_ALIGNED_READS)
 endif()
 
-#Create the verilated model 
+#Create the verilated model
 add_executable(verilated_model verilator_main.cpp)
 
 verilate(verilated_model SOURCES  ${CV32E40X_SOURCE} ${VICUNA_SRCS} ${FPU_SS_SOURCE} ${CMAKE_CURRENT_SOURCE_DIR}/vproc_top.sv
                INCLUDE_DIRS  ${CV32E40X_INCLUDE} ${VICUNA_INCS} ${FPU_SS_INCLUDE} ${CMAKE_CURRENT_SOURCE_DIR}
-               TOP_MODULE vproc_top 
+               TOP_MODULE vproc_top
                PREFIX Vvproc_top
-               ${TRACE}                                    
+               ${TRACE}
                VERILATOR_ARGS -cc -exe verilator_main.cpp --unroll-count 1024
-                              -Wno-WIDTH -Wno-PINMISSING -Wno-UNOPTFLAT   
-	                          -Wno-UNSIGNED -Wno-IMPLICIT -Wno-LITENDIAN -Wno-CASEINCOMPLETE        
-	                          -Wno-SYMRSVDWORD -Wno-BLKANDNBLK -Wno-BLKSEQ -Wno-SYNCASYNCNET        
-	                          -Wno-COMBDLY 
-	                          -Wno-WIDTHCONCAT         
+                              -Wno-WIDTH -Wno-PINMISSING -Wno-UNOPTFLAT
+	                          -Wno-UNSIGNED -Wno-IMPLICIT -Wno-LITENDIAN -Wno-CASEINCOMPLETE
+	                          -Wno-SYMRSVDWORD -Wno-BLKANDNBLK -Wno-BLKSEQ -Wno-SYNCASYNCNET
+	                          -Wno-COMBDLY
+	                          -Wno-WIDTHCONCAT
                               #+define+COREV_ASSERT_OFF       #Fixes UVM error with CV32E40X (Needed when not using -DVPROC_SVA)
 	                          --clk clk_i
-	                          ${TRACE_FLAG} 
+	                          ${TRACE_FLAG}
 	                          --assert -DVPROC_SVA
                               -GMEM_W=${MEM_W} -GVMEM_W=${VMEM_W}
                               ${VICUNA_MODE}
@@ -227,4 +227,4 @@ verilate(verilated_model SOURCES  ${CV32E40X_SOURCE} ${VICUNA_SRCS} ${FPU_SS_SOU
                               ${RISCV_ZVE32F}
                               ${RISCV_ZVFH}
                               -CFLAGS "-std=gnu++14 -O2")
-                              
+
