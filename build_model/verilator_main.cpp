@@ -451,18 +451,22 @@ int main(int argc, char **argv) {
                 //////////
 
                 //Log File
-                if (csv_out == 1 && main_reached && cycles > cycles_begin_trace) {
+                // if (csv_out == 1 && main_reached && cycles > cycles_begin_trace) {
+                if (csv_out == 1) {
                 // log data once main has been reached and desired start point has been reached
                     log_cycle(top, tfp, fcsv);
                 }
 
                 //Cycle count and instruction count
-                if(main_reached) {
+                // if(main_reached) {
+                if(1) {
                     if(!exiting)
                     {
                         cycles++;
                         if (inst_trace_out == 1) {
                             fprintf(inst_trace, "%08x\n", top->vproc_top->core->instruction_wb);
+                            fflush(inst_trace);
+                            // fprintf(stdout, "%08x\n", top->vproc_top->core->instruction_wb);
                         }
                     }
                     abort_cnt = (top->mem_req_o == mem_req_o_tmp) ? abort_cnt + 1 : 0;
@@ -597,7 +601,9 @@ double sc_time_stamp() {
 
 static void log_cycle(Vvproc_top *top, VerilatedTrace_t *tfp, FILE *fcsv) {
     fprintf(fcsv, "%d;%d;%08X;%08X;%08X;\n",
+    // fprintf(stdout, "%d;%d;%08X;%08X;%08X;\n",
             top->rst_ni, top->mem_req_o, top->mem_addr_o, top->pend_vreg_wr_map_o, 0);
+    fflush(fcsv);
     main_time++;
 #if defined(TRACE_VCD) || defined(TRACE_FST)
     if (tfp != NULL)
