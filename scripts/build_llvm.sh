@@ -19,6 +19,11 @@
 
 set -e
 
+SCRIPT_DIR=$(dirname $0)
+echo "SCRIPT_DIR=$SCRIPT_DIR"
+
+cd $SCRIPT_DIR
+
 cd ../Toolchain
 
 

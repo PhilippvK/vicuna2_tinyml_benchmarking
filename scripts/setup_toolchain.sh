@@ -8,20 +8,27 @@
 #   -GCC      :  RISCV GCC headers are needed for each supported architecture.  TODO: add these to the sync-and-share system used for muRISCV-nn.  currently built from source
 #   -spike    :  the riscv-isa-sim is used to validate vicuna results.  built from source
 
+set -e
+
 
 
 ######
 # make Toolchain directory
 ######
 
+SCRIPT_DIR=$(dirname $(readlink -f $0))
+echo "SCRIPT_DIR=$SCRIPT_DIR"
+
+cd $SCRIPT_DIR
+
 cd ..
-if [ -d $PWD/toolchain ]; then
+if [ -d $PWD/Toolchain ]; then
     echo "Toolchain Directory already exists"
 else
     echo "Making Toolchain Directory"
-    mkdir toolchain
+    mkdir Toolchain
 fi
-cd Scripts
+cd -
 ######
 #   Verilator setup
 ######

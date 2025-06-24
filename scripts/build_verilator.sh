@@ -1,9 +1,16 @@
 #!/bin/bash
 
+set -e
 
-INSTALL_PATH=$PWD/verilator
+
+
+SCRIPT_DIR=$(dirname $(readlink -f $0))
+echo "SCRIPT_DIR=$SCRIPT_DIR"
+
+cd $SCRIPT_DIR
 
 cd ../Toolchain
+INSTALL_PATH=$PWD/verilator
 
 #Download
 git clone https://github.com/verilator/verilator
@@ -13,4 +20,4 @@ cd verilator
 git checkout tags/v5.030
 autoconf
 ./configure --prefix $INSTALL_PATH
-make -j8
+make -j$(nproc)

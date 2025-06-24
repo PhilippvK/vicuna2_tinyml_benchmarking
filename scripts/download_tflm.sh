@@ -20,6 +20,11 @@
 # Prevent silent failures
 set -euo pipefail
 
+SCRIPT_DIR=$(dirname $0)
+echo "SCRIPT_DIR=$SCRIPT_DIR"
+
+cd $SCRIPT_DIR
+
 cd ../Benchmark_Sources
 
 echo "Download TFLM sources."
@@ -33,4 +38,3 @@ fi
 
 echo "Generate TFLM source tree."
 python3 tensorflow/lite/micro/tools/project_generation/create_tflm_tree.py .. #--makefile_options="OPTIMIZED_KERNEL_DIR=cmsis_nn"
-
