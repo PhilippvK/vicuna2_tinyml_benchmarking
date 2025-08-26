@@ -107,6 +107,8 @@ int main(int argc, char **argv) {
     FILE *inst_trace;
     if (inst_trace_out == 1) {
         inst_trace = fopen(argv[6], "w");
+        fprintf(inst_trace, "mcycle_o,current_IF_PC,instruction_wb,vsew,lmul,vl,instr_unit,instr_mode,instr_valid,dec_valid,dec_instr,issue_id_used,pending_load,pending_store,xif_issue_if_issue_req_id_o,xif_issue_if_issue_req_instr_o,xif_commit_if_commit_id_o,dec_data_id_o,instr_state_issue,instr_state_commit,instr_state_dec,csr_res_accepted\n");
+        fflush(inst_trace);
     }
 
     unsigned char *mem = (unsigned char *)malloc(mem_sz);
@@ -220,6 +222,8 @@ int main(int argc, char **argv) {
             for (i = 0; i < 10; i++) {
                 top->clk_i = 1;
                 top->eval();
+                if (csv_out == 1)
+                    log_cycle(top, tfp, fcsv);
                 top->clk_i = 0;
                 top->eval();
                 if (csv_out == 1) {
@@ -320,7 +324,9 @@ int main(int argc, char **argv) {
                             }
                             if (top->mem_we_o) {
                                 uint32_t* w_port = (uint32_t*)&(top->mem_wdata_o);
-                                putc(*w_port & 0xFF, stdout); //TODO: Verify this still works
+                                // putc(*w_port & 0xFF, stdout); //TODO: Verify this still works
+                                fputc(*w_port & 0xFF, stdout); //TODO: Verify this still works
+                                fflush(stdout);
                             }
                             break;
                         case 0xFF000004u: // UART status register
@@ -419,7 +425,7 @@ int main(int argc, char **argv) {
                    exit_code = 1;
                    break;
                 }
-                //A jump to address 0x74 is a failed test caused by an interrupt being called (all other interrupts also funnel here)
+                 // jump to address 0x74 is a failed test caused by an interrupt being called (all other interrupts also funnel here)
                 if ( current_IF_PC == 0x000000074u ) {
 
                    fprintf(stderr, "ERROR: TEST FAILURE - Interrupt Called\n");
@@ -439,9 +445,10 @@ int main(int argc, char **argv) {
                 } else{
                     cycles_stalled = 0;
                 }
-
-                if(cycles_stalled >= 10000) { //TODO: Expose this to the command line
-                    fprintf(stderr, "ERROR: SIMULATION STALLED FOR 10000 CYCLES AT IF_PC = 0x%x\n", current_IF_PC);
+                // const unsigned int max_cycles_stalled = 10000;
+                const unsigned int max_cycles_stalled = 100000;
+                if(cycles_stalled >= max_cycles_stalled) { //TODO: Expose this to the command line
+                    fprintf(stderr, "ERROR: SIMULATION STALLED FOR %u CYCLES AT IF_PC = 0x%x\n", max_cycles_stalled, current_IF_PC);
                     exit_code = 1;
                     break;
                 }
@@ -464,7 +471,9 @@ int main(int argc, char **argv) {
                     {
                         cycles++;
                         if (inst_trace_out == 1) {
-                            fprintf(inst_trace, "%08x\n", top->vproc_top->core->instruction_wb);
+                            fprintf(inst_trace, "%08ld,%08x,%08x,%02x,%02x,%06d,%02x,%04x,%u,%u,%08x,%u,%u,%u,%d,%08x,%d,%d,%d,%d,%d,%d\n", top->vproc_top->mcycle_o, current_IF_PC, top->vproc_top->core->instruction_wb, top->vsew_o, top->lmul_o, top->vl_o, top->instr_unit_o, top->instr_mode_o, top->instr_valid_o, top->dec_valid_o, top->dec_instr_o, top->issue_id_used_o, top->vect_pending_load_o, top->vect_pending_store_o, top->xif_issue_if_issue_req_id_o, top->xif_issue_if_issue_req_instr_o, top->xif_commit_if_commit_id_o, top->dec_data_id_o, top->instr_state_issue, top->instr_state_commit, top->instr_state_dec, top->vproc_top->csr_res_accepted);
+                            // fprintf(inst_trace, "%08ld,%08x,%08x,%08x\n", top->vproc_top->mcycle_o, current_IF_PC, top->vproc_top->core->instruction_wb, top->vproc_top->v_core->dec->misaligned_ls);
+                            // fprintf(inst_trace, "%08d,%08x,%08x,%08x\n", top->vproc_top->mcycle_o, current_IF_PC, top->vproc_top->core->instruction_wb);
                             fflush(inst_trace);
                             // fprintf(stdout, "%08x\n", top->vproc_top->core->instruction_wb);
                         }

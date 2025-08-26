@@ -148,14 +148,42 @@ int print_int(int value, int width, int pad, int base)
     return charCount;
 }
 
+int print_float(double value, int precision)
+{
+    int count = 0;
+
+    if (value < 0) {
+        uart_putc('-');
+        value = -value;
+        count++;
+    }
+
+    int int_part = (int)value;
+    double fraction = value - int_part;
+
+    count += print_unsigned(int_part, 0, '0');
+    uart_putc('.');
+    count++;
+
+    for (int i = 0; i < precision; i++) {
+        fraction *= 10;
+    }
+
+    // Round the fractional part
+    unsigned frac_part = (unsigned)(fraction + 0.5);
+    count += print_unsigned(frac_part, precision, '0');
+
+    return count;
+}
+
 int printf_impl(const char* format, va_list ap)
 {
     int count = 0;  // Printed character count
 
-    for (const char* fp = format; *fp; fp++)
-        {
+    for (const char* fp = format; *fp; fp++) {
         char pad = ' ';
         int width = 0;  // Field width
+        int prec = 0;  // Field precision
 
         if (*fp != '%')
             {
@@ -197,8 +225,18 @@ int printf_impl(const char* format, va_list ap)
                 width = width * 10 + (*fp++ - '0');
             }
 
-        switch (*fp)
-            {
+        if (*fp == '.') {
+            //int outWidth = va_arg(ap, int);
+            fp++;  // Width not yet implemented.
+            if (*fp >= '0' && *fp <= '9')
+            {    // Precision not yet implemented.
+                while (*fp >= '0' && *fp <= '9')
+                    prec = prec * 10 + (*fp++ - '0');
+
+            }
+        }
+
+        switch (*fp) {
             case 'd':
             count += print_decimal(va_arg(ap, int), width, pad);
             break;
@@ -224,14 +262,13 @@ int printf_impl(const char* format, va_list ap)
             case 's':
             count += uart_puts(va_arg(ap, char*));
             break;
-    /*
-            case 'g':
-            count += whisperPrintDoubleG(va_arg(ap, double));
-            break;
-            case 'f':
-            count += whisperPrintDoubleF(va_arg(ap, double));
-    */
+            case 'f': {
+                int precision = prec > 0 ? prec : 6;
+                double val = va_arg(ap, double);
+                count += print_float(val, precision);
+                break;
             }
+        }
     }
 
   return count;
@@ -247,5 +284,3 @@ int uart_printf(const char* format, ...)
 
   return code;
 }
-
-

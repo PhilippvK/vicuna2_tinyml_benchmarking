@@ -31,8 +31,25 @@ module vproc_top import vproc_pkg::*; #(
         input  logic               mem_ierr_i,
         input  logic [32  -1:0]    mem_irdata_i,
 
-        output logic               data_iread_o
-
+        output logic               data_iread_o,
+        output logic [1:0] vsew_o,
+        output logic [2:0] lmul_o,
+        output logic [31:0] vl_o,
+        output logic [2:0] instr_unit_o,
+        output logic [12:0] instr_mode_o,
+        output logic instr_valid_o,
+        output logic dec_valid_o,
+        output logic [31:0] dec_instr_o,
+        output logic issue_id_used_o,
+        output logic vect_pending_load_o,
+        output logic vect_pending_store_o,
+        output logic [X_ID_WIDTH -1:0] xif_issue_if_issue_req_id_o,
+        output logic [31:0] xif_issue_if_issue_req_instr_o,
+        output logic [X_ID_WIDTH -1:0] xif_commit_if_commit_id_o,
+        output logic [X_ID_WIDTH -1:0] dec_data_id_o,
+        output logic [1:0] instr_state_issue,
+        output logic [1:0] instr_state_commit,
+        output logic [1:0] instr_state_dec
     );
 
     if ((MEM_W & (MEM_W - 1)) != 0 || MEM_W < 32) begin
@@ -71,6 +88,7 @@ module vproc_top import vproc_pkg::*; #(
     logic        sdata_gnt;
     logic        sdata_rvalid;
     logic        sdata_err;
+    logic [63:0] mcycle_o /* verilator public */;
     logic [31:0] sdata_rdata;
 
 
@@ -93,6 +111,8 @@ module vproc_top import vproc_pkg::*; #(
     ) vcore_xif ();
     logic        vect_pending_load;
     logic        vect_pending_store;
+    assign vect_pending_load_o = vect_pending_load;
+    assign vect_pending_store_o = vect_pending_store;
 
     //signals for calculating the avg VL.  Defined here in case vcore is not instantiated
     logic        vcore_result_valid /* verilator public */;
@@ -176,7 +196,7 @@ module vproc_top import vproc_pkg::*; #(
         .data_rdata_i        ( sdata_rdata   ),
         .data_err_i          ( sdata_err     ),
         .data_exokay_i       ( 1'b0          ),
-        .mcycle_o            (               ),
+        .mcycle_o            ( mcycle_o      ),
         .xif_compressed_if   ( host_xif      ),
         .xif_issue_if        ( host_xif      ),
         .xif_commit_if       ( host_xif      ),
@@ -360,8 +380,25 @@ module vproc_top import vproc_pkg::*; #(
         .fpu_res_id (fpu_res_id),
 
         `endif
+        .csr_res_acc (csr_res_accepted),
 
-        .pend_vreg_wr_map_o ( pend_vreg_wr_map_o )
+        .pend_vreg_wr_map_o ( pend_vreg_wr_map_o ),
+        .vsew_o (vsew_o),
+        .lmul_o (lmul_o),
+        .vl_o (vl_o),
+        .instr_unit_o (instr_unit_o),
+        .instr_mode_o (instr_mode_o),
+        .instr_valid_o (instr_valid_o),
+        .dec_valid_o (dec_valid_o),
+        .dec_instr_o (dec_instr_o),
+        .issue_id_used_o (issue_id_used_o),
+        .xif_issue_if_issue_req_id_o(xif_issue_if_issue_req_id_o),
+        .xif_issue_if_issue_req_instr_o(xif_issue_if_issue_req_instr_o),
+        .xif_commit_if_commit_id_o(xif_commit_if_commit_id_o),
+        .dec_data_id_o(dec_data_id_o),
+        .instr_state_issue(instr_state_issue),
+        .instr_state_commit(instr_state_commit),
+        .instr_state_dec(instr_state_dec)
     );
 
 
@@ -389,7 +426,7 @@ module vproc_top import vproc_pkg::*; #(
 
         parameter C_XF16 = 1'b0;
 
-        parameter fpnew_pkg::fpu_features_t FEATURES = fpu_ss_pkg::FPU_FEATURES;
+         parameter fpnew_pkg::fpu_features_t FEATURES = fpu_ss_pkg::FPU_FEATURES;
 
     `endif
 
@@ -541,6 +578,10 @@ module vproc_top import vproc_pkg::*; #(
 
 //If both Vicuna and FPU_SS are used, connect with arbitration
 //All signals from the host can be broadcast to all units on the interface
+    logic csr_res_accepted /* verilator public */;
+    assign csr_res_accepted = vcore_xif.issue_ready & vcore_xif.issue_valid & ~vcore_xif.issue_resp.accept;
+    assign vcore_xif.issue_valid         = host_xif.issue_valid;
+    assign host_xif.issue_ready          = vcore_xif.issue_ready;
 `ifdef RISCV_ZVE32X
     `ifdef RISCV_F
 

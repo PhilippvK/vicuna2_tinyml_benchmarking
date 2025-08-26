@@ -29,6 +29,7 @@ add_definitions(-DTF_LITE_USE_GLOBAL_MAX)
 add_definitions(-DTF_LITE_USE_GLOBAL_MIN)
 add_definitions(-DTF_LITE_STATIC_MEMORY)
 add_definitions(-DTF_LITE_USE_GLOBAL_CMATH_FUNCTIONS)
+add_definitions(-DTF_LITE_STRIP_ERROR_STRINGS)
 if(NOT USE_F)
     add_definitions(-DTFLITE_EMULATE_FLOAT)                         #Might have issues with this for F extensions
 endif()
@@ -40,30 +41,30 @@ if(RISCV_ZFH)
     if(FH_OPS)
         message("USING FP16 INTERMEDIATE OPS")
         set(FH_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/FH_Support/16_bit_ops)
-        
+
         set(FH_SUPPORT_SRCS
-        ${FH_INCLUDE}/dequantize.h 
+        ${FH_INCLUDE}/dequantize.h
         ${FH_INCLUDE}/dequantize.cc
         ${FH_INCLUDE}/dequantize_common.cc
         ${FH_INCLUDE}/fully_connected.h
         ${FH_INCLUDE}/fully_connected.cc
         ${FH_INCLUDE}/fully_connected_common.cc
-        
+
         ${FH_INCLUDE}/conv.h
         ${FH_INCLUDE}/conv.cc
         ${FH_INCLUDE}/conv_common.cc
-        
+
         ${FH_INCLUDE}/depthwiseconv_float.h
         ${FH_INCLUDE}/depthwise_conv.cc
         ${FH_INCLUDE}/depthwise_conv_common.cc
-        
+
         ${FH_INCLUDE}/pooling.h
         ${FH_INCLUDE}/pooling.cc
         ${FH_INCLUDE}/pooling_common.cc
-        
+
         ${FH_INCLUDE}/reshape.cc
         ${FH_INCLUDE}/reshape_common.cc
-        
+
         ${FH_INCLUDE}/softmax.h
         ${FH_INCLUDE}/softmax.cc
         ${FH_INCLUDE}/softmax_common.cc
