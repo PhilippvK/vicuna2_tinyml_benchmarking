@@ -28,7 +28,7 @@ else
     echo "Making Toolchain Directory"
     mkdir Toolchain
 fi
-cd -
+cd scripts
 ######
 #   Verilator setup
 ######
@@ -58,3 +58,9 @@ cd -
 ######
 
 ./download_tflm.sh
+
+######
+#   spike setup
+######
+
+./download_spike.sh

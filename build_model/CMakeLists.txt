@@ -46,6 +46,7 @@ set(MEM_SZ 4194304)
 ######################
 
 if(${RISCV_ARCH} STREQUAL "rv32im") #Build only CV32E40X
+    #Verilog Flags
     set(XIF_FLAG "" )
     set(RISCV_F "" )
     set(RISCV_ZFH "" )
@@ -54,44 +55,66 @@ if(${RISCV_ARCH} STREQUAL "rv32im") #Build only CV32E40X
     set(RISCV_ZVFH "" )
 
 elseif(${RISCV_ARCH} STREQUAL "rv32imf") #Build CV32E40X with FPU on the Xif interface
+    #Verilog Flags
     set(XIF_FLAG "-DXIF_ON" )
     set(RISCV_F "-DRISCV_F" )
     set(RISCV_ZFH "" )
     set(RISCV_ZVE32X "" )
     set(RISCV_ZVE32F "" )
     set(RISCV_ZVFH "" )
+    #C++ Flags
+    add_definitions(-DRISCV_F)
 
 elseif(${RISCV_ARCH} STREQUAL "rv32imf_zfh") #Build CV32E40X with FPU on the Xif interface with half-float support
+    #Verilog Flags
     set(XIF_FLAG "-DXIF_ON" )
     set(RISCV_F "-DRISCV_F" )
     set(RISCV_ZFH "-DRISCV_ZFH" )
     set(RISCV_ZVE32X "" )
     set(RISCV_ZVE32F "" )
     set(RISCV_ZVFH "" )
+    #C++ Flags
+    add_definitions(-DRISCV_F)
+    add_definitions(-DRISCV_ZFH)
 
 elseif(${RISCV_ARCH} STREQUAL "rv32im_zve32x") #Build CV32E40X with Vicuna on the Xif interface
+    #Verilog Flags
     set(XIF_FLAG "-DXIF_ON" )
     set(RISCV_F "" )
     set(RISCV_ZFH "" )
     set(RISCV_ZVE32X "-DRISCV_ZVE32X" )
     set(RISCV_ZVE32F "" )
     set(RISCV_ZVFH "" )
+    #C++ Flags
+    add_definitions(-DRISCV_ZVE32X)
 
 elseif(${RISCV_ARCH} STREQUAL "rv32imf_zve32f") #Build CV32E40X with Vicuna and FPU on the Xif interface
+    #Verilog Flags
     set(XIF_FLAG "-DXIF_ON" )
     set(RISCV_F "-DRISCV_F" )
     set(RISCV_ZFH "" )
     set(RISCV_ZVE32X "-DRISCV_ZVE32X" )
     set(RISCV_ZVE32F "-DRISCV_ZVE32F" )
     set(RISCV_ZVFH "" )
+    #C++ Flags
+    add_definitions(-DRISCV_F)
+    add_definitions(-DRISCV_ZVE32X)
+    add_definitions(-DRISCV_ZVE32F)
 
 elseif(${RISCV_ARCH} STREQUAL "rv32imf_zfh_zve32f_zvfh") #Build CV32E40X with Vicuna (+floating point + half precision float) and FPU on the Xif interface
+    #Verilog Flags
     set(XIF_FLAG "-DXIF_ON" )
     set(RISCV_F "-DRISCV_F" )
     set(RISCV_ZFH "-DRISCV_ZFH" )
     set(RISCV_ZVE32X "-DRISCV_ZVE32X" )
     set(RISCV_ZVE32F "-DRISCV_ZVE32F" )
     set(RISCV_ZVFH "-DRISCV_ZVFH" )
+    #C++ Flags
+    add_definitions(-DRISCV_F)
+    add_definitions(-DRISCV_ZFH)
+    add_definitions(-DRISCV_ZVE32X)
+    add_definitions(-DRISCV_ZVE32F)
+    add_definitions(-DRISCV_ZVFH)
 
 else()
     message(FATAL_ERROR "Unsupported RISCV_ARCH (${RISCV_ARCH}) selected")
@@ -175,12 +198,13 @@ set(FPU_SS_SOURCE   ${DESIGN_RTL_DIR_FPU_SS}/fpu_ss_pkg.sv                      
 set(FPU_SS_INCLUDE  ${DESIGN_RTL_DIR_FPU_SS} )                                          #FPU_SS Include Dirs
 
 
-add_subdirectory(../rtl/vproc_rtl vicuna) # Include vicuna and cvfpu with VICUNA_SRCS, VICUNA_INCS
+set(VICUNA_TOP_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/../rtl/vproc_rtl )
+add_subdirectory(${VICUNA_TOP_DIR} vicuna) # Include vicuna and cvfpu with VICUNA_SRCS, VICUNA_INCS
 
 ### TRACE FLAGS
 
 if(TRACE)
-    add_definitions(-DTRACE_VCD) #This does nothing.  TODO: Confirm and remove.
+    add_definitions(-DTRACE_VCD) #Add flag for C++ sources.
     set(TRACE TRACE)
 
     if(TRACE_FULL)
@@ -199,8 +223,17 @@ if(FORCE_ALIGNED_READS)
     set(READ_MODE -DFORCE_ALIGNED_READS)
 endif()
 
-#Create the verilated model
-add_executable(verilated_model verilator_main.cpp)
+#Create the verilated model.  Include verilator_main.cpp and verilator_support.h functions
+add_executable(verilated_model)
+
+target_include_directories(verilated_model PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${VICUNA_TOP_DIR})
+
+target_sources(verilated_model PUBLIC
+    ${VICUNA_TOP_DIR}/verilator_support.h
+    ${VICUNA_TOP_DIR}/verilator_support.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/verilator_main.cpp)
 
 verilate(verilated_model SOURCES  ${CV32E40X_SOURCE} ${VICUNA_SRCS} ${FPU_SS_SOURCE} ${CMAKE_CURRENT_SOURCE_DIR}/vproc_top.sv
                INCLUDE_DIRS  ${CV32E40X_INCLUDE} ${VICUNA_INCS} ${FPU_SS_INCLUDE} ${CMAKE_CURRENT_SOURCE_DIR}
@@ -227,4 +260,3 @@ verilate(verilated_model SOURCES  ${CV32E40X_SOURCE} ${VICUNA_SRCS} ${FPU_SS_SOU
                               ${RISCV_ZVE32F}
                               ${RISCV_ZVFH}
                               -CFLAGS "-std=gnu++14 -O2")
-

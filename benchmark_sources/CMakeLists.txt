@@ -30,7 +30,7 @@ add_definitions(-DTF_LITE_USE_GLOBAL_MIN)
 add_definitions(-DTF_LITE_STATIC_MEMORY)
 add_definitions(-DTF_LITE_USE_GLOBAL_CMATH_FUNCTIONS)
 add_definitions(-DTF_LITE_STRIP_ERROR_STRINGS)
-if(NOT USE_F)
+if(NOT RISCV_F)
     add_definitions(-DTFLITE_EMULATE_FLOAT)                         #Might have issues with this for F extensions
 endif()
 add_definitions(-fno-rtti)          #Needed for GCC to resolve virtual delete function scope issue
@@ -72,73 +72,73 @@ if(RISCV_ZFH)
     else()
         message("USING FP32 INTERMEDIATE OPS WITH FP16 INPUTS")
         set(FH_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/FH_Support/32_bit_ops)
-        
+
         set(FH_SUPPORT_SRCS
-        ${FH_INCLUDE}/dequantize.h 
+        ${FH_INCLUDE}/dequantize.h
         ${FH_INCLUDE}/dequantize.cc
         ${FH_INCLUDE}/dequantize_common.cc
-        
+
         ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/reference/fully_connected.h #Use original FC Kernel, using float
         ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/fully_connected.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/fully_connected_common.cc
-        
+
         ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/reference/conv.h
         ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/conv.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/conv_common.cc
-        
+
         ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/reference/depthwiseconv_float.h
         ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/depthwise_conv.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/depthwise_conv_common.cc
-        
+
         ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/reference/pooling.h
         ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/pooling.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/pooling_common.cc
-        
+
         ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/reshape.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/reshape_common.cc
-        
+
         ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/reference/softmax.h
         ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/softmax.cc
         ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/softmax_common.cc
-        
+
         )
-    
-    
-    
-    
+
+
+
+
     endif()
 else()
     message("USING DEFAULT OPS")
     set(FH_INCLUDE "")
     #No FH support, use original sources
     set(FH_SUPPORT_SRCS
-    ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/reference/dequantize.h 
+    ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/reference/dequantize.h
     ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/dequantize.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/dequantize_common.cc
-    
+
     ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/reference/fully_connected.h
     ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/fully_connected.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/fully_connected_common.cc
-    
+
     ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/reference/conv.h
     ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/conv.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/conv_common.cc
-    
+
     ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/reference/depthwiseconv_float.h
     ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/depthwise_conv.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/depthwise_conv_common.cc
-    
+
     ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/reference/pooling.h
     ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/pooling.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/pooling_common.cc
-    
+
     ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/reshape.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/reshape_common.cc
-    
+
     ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/reference/softmax.h
     ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/softmax.cc
     ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/softmax_common.cc
-    
+
     )
 endif()
 
@@ -243,7 +243,7 @@ set(TFLM_SRCS
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/mul_common.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/quantize.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/hard_swish_common.cc
-  
+
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/cumsum.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/dequantize.h
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/prelu.h
@@ -321,7 +321,7 @@ set(TFLM_SRCS
  # ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/svdf.h
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/call_once.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/prelu.cc
-  
+
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/lstm_shared.h
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/zeros_like.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/neg.cc
@@ -348,7 +348,7 @@ set(TFLM_SRCS
  # ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/unidirectional_sequence_lstm_test_config.h
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/transpose.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/kernels/logistic_common.cc
-  
+
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/debug_log.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/micro_op_resolver.h
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/micro/micro_op_resolver.cc
@@ -381,14 +381,14 @@ set(TFLM_SRCS
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/portable_tensor.h
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/quantization_util.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/reference/portable_tensor_utils_impl.h
-  
+
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/reference/slice.h
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/reference/log_softmax.h
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/reference/process_broadcast_shapes.h
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/reference/broadcast_to.h
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/reference/transpose.h
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/reference/depthwiseconv_float.h
-#  
+#
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/reference/prelu.h
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/reference/logistic.h
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/reference/comparisons.h
@@ -431,7 +431,7 @@ set(TFLM_SRCS
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/reference/floor_div.h
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/reference/leaky_relu.h
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/reference/resize_bilinear.h
-  
+
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/reference/integer_ops/logistic.h
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/reference/integer_ops/mean.h
   ${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/lite/kernels/internal/reference/integer_ops/transpose_conv.h
@@ -531,4 +531,3 @@ if(RISCV_F)
       add_subdirectory(FP32/aww)
     endif()
 endif()
-
