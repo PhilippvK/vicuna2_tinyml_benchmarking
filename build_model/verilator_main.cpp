@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
     FILE *inst_trace;
     if (inst_trace_out == 1) {
         inst_trace = fopen(argv[6], "w");
-        fprintf(inst_trace, "mcycle_o,current_IF_PC,instruction_wb,vsew,lmul,vl,instr_unit,instr_mode,instr_valid,dec_valid,dec_instr,issue_id_used,pending_load,pending_store,xif_issue_if_issue_req_id_o,xif_issue_if_issue_req_instr_o,xif_commit_if_commit_id_o,dec_data_id_o,instr_state_issue,instr_state_commit,instr_state_dec,csr_res_accepted\n");
+        fprintf(inst_trace, "mcycle_o,current_IF_PC,current_EX_PC,current_WB_PC,instruction_if,instruction_wb,vsew,lmul,vl,instr_unit,instr_mode,instr_valid,dec_valid,dec_instr,issue_id_used,pending_load,pending_store,xif_issue_if_issue_req_id_o,xif_issue_if_issue_req_instr_o,xif_commit_if_commit_id_o,dec_data_id_o,instr_state_issue,instr_state_commit,instr_state_dec,csr_res_accepted\n");
         fflush(inst_trace);
     }
 
@@ -243,7 +243,9 @@ int main(int argc, char **argv) {
 
             //Variables for stall detection
             int current_IF_PC = 0;
+            int current_WB_PC = 0;
             int last_IF_PC = 0;
+            int last_WB_PC = 0;
             int cycles_stalled = 0;
 
 
@@ -471,7 +473,7 @@ int main(int argc, char **argv) {
                     {
                         cycles++;
                         if (inst_trace_out == 1) {
-                            fprintf(inst_trace, "%08ld,%08x,%08x,%02x,%02x,%06d,%02x,%04x,%u,%u,%08x,%u,%u,%u,%d,%08x,%d,%d,%d,%d,%d,%d\n", top->vproc_top->mcycle_o, current_IF_PC, top->vproc_top->core->instruction_wb, top->vsew_o, top->lmul_o, top->vl_o, top->instr_unit_o, top->instr_mode_o, top->instr_valid_o, top->dec_valid_o, top->dec_instr_o, top->issue_id_used_o, top->vect_pending_load_o, top->vect_pending_store_o, top->xif_issue_if_issue_req_id_o, top->xif_issue_if_issue_req_instr_o, top->xif_commit_if_commit_id_o, top->dec_data_id_o, top->instr_state_issue, top->instr_state_commit, top->instr_state_dec, top->vproc_top->csr_res_accepted);
+                            fprintf(inst_trace, "%08ld,%08x,%08x,%08x,%08x,%08x,%02x,%02x,%06d,%02x,%04x,%u,%u,%08x,%u,%u,%u,%d,%08x,%d,%d,%d,%d,%d,%d\n", top->vproc_top->mcycle_o, current_IF_PC, top->vproc_top->core->instruction_ex_pc, top->vproc_top->core->instruction_wb_pc, top->vproc_top->core->instruction_if, top->vproc_top->core->instruction_wb, top->vsew_o, top->lmul_o, top->vl_o, top->instr_unit_o, top->instr_mode_o, top->instr_valid_o, top->dec_valid_o, top->dec_instr_o, top->issue_id_used_o, top->vect_pending_load_o, top->vect_pending_store_o, top->xif_issue_if_issue_req_id_o, top->xif_issue_if_issue_req_instr_o, top->xif_commit_if_commit_id_o, top->dec_data_id_o, top->instr_state_issue, top->instr_state_commit, top->instr_state_dec, top->vproc_top->csr_res_accepted);
                             // fprintf(inst_trace, "%08ld,%08x,%08x,%08x\n", top->vproc_top->mcycle_o, current_IF_PC, top->vproc_top->core->instruction_wb, top->vproc_top->v_core->dec->misaligned_ls);
                             // fprintf(inst_trace, "%08d,%08x,%08x,%08x\n", top->vproc_top->mcycle_o, current_IF_PC, top->vproc_top->core->instruction_wb);
                             fflush(inst_trace);
@@ -479,10 +481,15 @@ int main(int argc, char **argv) {
                         }
                     }
                     abort_cnt = (top->mem_req_o == mem_req_o_tmp) ? abort_cnt + 1 : 0;
-                    if ((current_IF_PC != last_IF_PC) && !exiting)
-                    {
+                    // if ((current_IF_PC != last_IF_PC) && !exiting)
+                    // {
+                    //     instructions++;
+                    // }
+                    current_WB_PC = top->vproc_top->core->instruction_wb_pc;
+                    if ((current_WB_PC != last_WB_PC) && !exiting) {
                         instructions++;
                     }
+                    last_WB_PC = current_WB_PC;
                 }
 
 
