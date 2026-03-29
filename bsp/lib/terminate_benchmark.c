@@ -1,11 +1,20 @@
 #include "terminate_benchmark.h"
 
+#define TOHOST_ADDR 0x500
+
+static volatile unsigned int *tohost = (unsigned int *)TOHOST_ADDR;
+
+void sim_exit(int code) {
+    *tohost = code;
+    while (1); // wait for simulator to stop
+}
+
 void benchmark_success()
 {
-    __asm__ volatile("jalr x0, 124(x0)");     //jump to 0x7c to signal success (Custom use interrupt, will not be called).  Jumps to these addresses are handled by verilator_main.cpp
+    sim_exit(0);
 }
 
 void benchmark_failure()
 {
-    __asm__ volatile("jalr x0, 120(x0)");   //jump to 0x78 to signal failure caused by mismatched test output  Other interrupts are caught by 0x74 to signal a problem
+    sim_exit(123);
 }

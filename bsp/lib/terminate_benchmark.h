@@ -29,6 +29,8 @@ void benchmark_success();
 
 void benchmark_failure();
 
+void sim_exit(int code);
+
 void start_cycle_count();
 
 void store_result_float(float result);

@@ -188,33 +188,26 @@ int main(int argc, char **argv) {
         if (check_memmapio(top->mem_addr_o, (top->mem_req_o && top->mem_we_o), 8, (unsigned char*)&(top->mem_wdata_o), 0x400u, &w_port)){
             putc(w_port, stdout);
         }
+        char exit_code_;
+        if (check_memmapio(top->mem_addr_o, (top->mem_req_o && top->mem_we_o), 8, (unsigned char*)&(top->mem_wdata_o), 0x500u, &exit_code_)){
+            exit_code = exit_code_ & 0xff;
+            fprintf(stderr, "EXIT called with code = %u\n", exit_code);
+            if (exit_code == 123) {
+                fprintf(stderr, "ERROR: TEST FAILURE - Output Mismatch\n");
+            } else if (exit_code == 0) {
+                fprintf(stderr, "SUCCESS: TEST PASS - Output Match\n");
+            }
+            break;
+        }
 
         //////////////////////////
         // Advance to next clock cycle
         //////////////////////////
         advance_cycle(top);
-            
+
         //////////////////////////
         // Check Exit Conditions
         //////////////////////////
-        
-        //A jump to address 0x78 is a failed test caused by mismatched output
-        if (check_PC(top, 0x00000078u) ) {
-            fprintf(stderr, "ERROR: TEST FAILURE - Output Mismatch\n");
-            exit_code = 1;
-            break;
-        }
-        //A jump to address 0x74 is a failed test caused by an interrupt being called (all other interrupts also funnel here)
-        if (check_PC(top, 0x000000074u) ) {
-            fprintf(stderr, "ERROR: TEST FAILURE - Interrupt Called\n");
-            exit_code = 1;
-            break;
-        }
-        
-        if (check_PC(top,  0x0000007Cu)) {
-            fprintf(stderr, "SUCCESS: TEST PASS - Output Match\n");
-            break;
-        }
 
         if (check_stall(top, 10000)){
             exit_code = 1;
