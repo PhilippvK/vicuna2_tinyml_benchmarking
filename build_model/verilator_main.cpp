@@ -188,9 +188,14 @@ int main(int argc, char **argv) {
         if (check_memmapio(top->mem_addr_o, (top->mem_req_o && top->mem_we_o), 8, (unsigned char*)&(top->mem_wdata_o), 0x400u, &w_port)){
             putc(w_port, stdout);
         }
-        char exit_code_;
-        if (check_memmapio(top->mem_addr_o, (top->mem_req_o && top->mem_we_o), 8, (unsigned char*)&(top->mem_wdata_o), 0x500u, &exit_code_)){
-            exit_code = exit_code_ & 0xff;
+        //Exit code handling via tohost
+        uint64_t exit_code_raw;
+        if (check_memmapio(top->mem_addr_o, (top->mem_req_o && top->mem_we_o), 64, (unsigned char*)&(top->mem_wdata_o), 0x500u, (char*)&exit_code_raw)){
+            if (exit_code_raw & 0b1) {
+                exit_code = (exit_code_raw >> 1) & 0xff;
+            } else {
+                // Unhandled tohost write?
+            }
             fprintf(stderr, "EXIT called with code = %u\n", exit_code);
             if (exit_code == 123) {
                 fprintf(stderr, "ERROR: TEST FAILURE - Output Mismatch\n");

@@ -3,7 +3,7 @@
 extern volatile uint64_t tohost;
 
 void sim_exit(int code) {
-    tohost = code;
+    tohost = (code << 1) + 1;
     while (1); // wait for simulator to stop
 }
 
