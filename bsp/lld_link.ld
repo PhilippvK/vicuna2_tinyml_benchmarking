@@ -23,6 +23,19 @@ SECTIONS
         *(.vectors)
     } >boot
 
+
+    .tohost 0x500 : {
+        . = ALIGN(8);
+        tohost = .;
+        . += 8;
+    } >boot
+
+    .fromhost 0x508 : {
+        . = ALIGN(8);
+        fromhost = .;
+        . += 8;
+    } >boot
+
     .text : {
         . = ALIGN(4);
         _stext = .;

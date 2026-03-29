@@ -1,11 +1,9 @@
 #include "terminate_benchmark.h"
 
-#define TOHOST_ADDR 0x500
-
-static volatile unsigned int *tohost = (unsigned int *)TOHOST_ADDR;
+extern volatile uint64_t tohost;
 
 void sim_exit(int code) {
-    *tohost = code;
+    tohost = code;
     while (1); // wait for simulator to stop
 }
 
