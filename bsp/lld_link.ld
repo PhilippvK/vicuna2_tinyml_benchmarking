@@ -56,16 +56,29 @@ SECTIONS
         *(.shbss)
     } >ram
 
-    .data : {
+    .data          :
+    {
         . = ALIGN(4);
-        sdata = .;
-        _sdata = .;
-        *(.data);
-        *(.data.*)
-        edata = .;
-        _edata = .;
+        __DATA_BEGIN__ = .;
+        *(.data .data.*)
+        *(.gnu.linkonce.d.*)
     } >ram
 
+
+    .sdata          :
+    {
+        . = ALIGN(4);
+        __SDATA_BEGIN__ = .;
+        *(.sdata .sdata.*)
+        *(.gnu.linkonce.s.*)
+    } >ram
+
+    . = ALIGN(4);
+    PROVIDE( _edata = . );
+    PROVIDE( edata = . );
+
+    PROVIDE( _fbss = . );
+    PROVIDE( __bss_start = . );
     .bss (NOLOAD) : {
         . = ALIGN(4);
         _bss_start = .;
@@ -82,8 +95,14 @@ SECTIONS
         _user_start = .;
     } >ram
 
+    . = ALIGN(8);
+    __BSS_END__ = .;
+    __global_pointer$ = MIN(__SDATA_BEGIN__ + 0x800,  MAX(__DATA_BEGIN__ + 0x800, __BSS_END__ - 0x800));
+    PROVIDE( _end = . );
+    PROVIDE( end = . );
 
     .stack ORIGIN(ram) + LENGTH(ram) - STACK_LEN (NOLOAD) : {
+        PROVIDE( _heap_end = . );
         . = ALIGN(16);
         _stack_start = .;
         . = . + STACK_LEN;
@@ -91,5 +110,6 @@ SECTIONS
         stack = .;
         _stack = .;
         _stack_end = .;
+        PROVIDE( _sp = . );
     } >ram
 }
