@@ -23,27 +23,40 @@
     .global _start
     .type   _start, @function
 _start:
+
+    # Initialize global pointer
+    .option push
+    .option norelax
+    la      gp, __global_pointer$
+    .option pop
+
     # initialize stack pointer
     la sp, _stack
 
-    # clear bss
-    la t1, _bss_start
-    la t2, _bss_end
+    # Clear the bss segment
+    # memset(void* str, int c, size_t n);
+    # memset(__bss_start, 0, __bss_start - _end);
+    la      a0, __bss_start
+    li      a1, 0
+    la      a2, _end
+    sub     a2, a2, a0
+    call    memset
 
-    bge t1, t2, bss_clear_end
+    # Register global termination functions
+    # to be called upon exit
+    la      a0, __libc_fini_array
+    call    atexit
 
-bss_clear_loop:
-    sw x0, 0(t1)
-    addi t1, t1, 4
-    ble t1, t2, bss_clear_loop
+    # Run global initialization functions
+    call    __libc_init_array
 
-bss_clear_end:
+    # jump to main (argc = 0, argv = NULL, envp = NULL)
+    li      a0, 0
+    li      a1, 0
+    li      a2, 0 # set envp = NULL just in case
+    call    main
 
-    # jump to main (argc = 0, argv = 0, returns to _start)
-    li a0, 0
-    li a1, 0
-    la ra, _start
-    j main
+    tail    exit
 
 
 # default exception handler (infinite loop)
