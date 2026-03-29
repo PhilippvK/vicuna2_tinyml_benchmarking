@@ -221,7 +221,8 @@ int main(int argc, char **argv) {
         ////////////////////////
         // Statistics and Traces
         ////////////////////////
-        main_reached = (check_PC(top, 0x00002000u)) | main_reached;  //Vicuna Linker always puts MAIN (or run_test) at addr 2000.  Wait to check for a stall/abort until this has passed.
+        // main_reached = (check_PC(top, 0x00002000u)) | main_reached;  //Vicuna Linker always puts MAIN (or run_test) at addr 2000.  Wait to check for a stall/abort until this has passed.
+        main_reached = 1;
 
         if (main_reached){
             // update all stats
