@@ -85,10 +85,10 @@ exc_wrapper:
     sw a1, 8(sp)
 
     # call exception handler (a0 = mcause, a1 = mepc, a2 = mtval, a3 = fp)
+    # void _trap_handler_c(unsigned long mcause, unsigned long mepc)
     csrr a0, mcause
-    csrr a2, mtval
-    lw a3, 72(sp)
-    call exception_handler
+    csrr a1, mepc
+    call    _trap_handler_c
 
     # restore mepc, mie and mstatus (restoring mstatus disables interrupts):
     lw t0, 0(sp)

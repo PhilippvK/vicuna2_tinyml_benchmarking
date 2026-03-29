@@ -26,6 +26,7 @@ target_sources(UART_Vicuna PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/vicuna_crt.c
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/terminate_benchmark.h
   ${CMAKE_CURRENT_SOURCE_DIR}/lib/terminate_benchmark.c
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/trap_handler.c
 )
 
 ####
