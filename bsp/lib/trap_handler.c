@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "uart.h"
-#include "terminate_benchmark.h"
+#include <stdint.h>
 
 #define INSTRUCTION_ADDRESS_MISALIGNED 0
 #define INSTRUCTION_ACCESS_FAULT 1
@@ -23,8 +22,8 @@
 #define ECALL_FROM_M_MODE 11
 
 #define ERROR_HALT(msg)                           \
-    uart_printf("EXCEPTION: %s at %08X\n", msg, mepc); \
-    sim_exit(-1);
+    printf("EXCEPTION: %s at %08X\n", msg, mepc); \
+    exit(-1);
 
 void _trap_handler_c(uint32_t mcause, uint32_t mepc)
 {
@@ -63,7 +62,7 @@ void _trap_handler_c(uint32_t mcause, uint32_t mepc)
         ERROR_HALT("ECALL");
 
     default:
-        uart_printf("CAUSE: %u\n", mcause);
+        printf("CAUSE: %u\n", mcause);
         ERROR_HALT("Unhandled cause");
     }
 }
